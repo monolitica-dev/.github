@@ -1,0 +1,23 @@
+name: Feature request
+description: Describe a user problem and the desired outcome.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and affected users
+      description: What is difficult today and why does it matter?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome and acceptance criteria
+      description: Explain how to verify that the problem is solved.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and constraints
+      description: Include scope, dependencies and operational considerations.
