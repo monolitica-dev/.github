@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in README.md AGENTS.md SECURITY.md CONTRIBUTING.md PULL_REQUEST_TEMPLATE.md profile/README.md ISSUE_TEMPLATE/bug.yml ISSUE_TEMPLATE/feature.yml; do
+          for file in README.md AGENTS.md SECURITY.md CONTRIBUTING.md PULL_REQUEST_TEMPLATE.md profile/README.md .github/ISSUE_TEMPLATE/bug.yml .github/ISSUE_TEMPLATE/feature.yml .github/ISSUE_TEMPLATE/config.yml; do
             test -s "$file"
             git ls-files --error-unmatch "$file" > /dev/null
           done
