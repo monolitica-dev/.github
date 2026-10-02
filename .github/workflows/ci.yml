@@ -1,0 +1,57 @@
+name: Community defaults CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: community-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Check public documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in README.md AGENTS.md SECURITY.md CONTRIBUTING.md PULL_REQUEST_TEMPLATE.md profile/README.md ISSUE_TEMPLATE/bug.yml ISSUE_TEMPLATE/feature.yml; do
+            test -s "$file"
+            git ls-files --error-unmatch "$file" > /dev/null
+          done
+          for file in .env .env.local .env.production nested/.env.local; do
+            git check-ignore --no-index -q "$file"
+          done
+          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '(^|/)\.env\.example$'; then
+            echo 'Real environment files must not be tracked.' >&2
+            exit 1
+          fi
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install verified Gitleaks CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          curl --fail --silent --show-error --location --retry 3 -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz' | sha256sum --check
+          tar -xzf gitleaks.tar.gz gitleaks
+      - name: Scan Git history
+        shell: bash
+        run: '"$RUNNER_TEMP/gitleaks" git --redact --no-banner --log-opts="--all" .'
